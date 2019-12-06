@@ -1,0 +1,17 @@
+[
+	{
+		"nome": "Matteo",
+		"cognome": "Magri",
+		"matricola": "MM200251",
+		"nomeCorso": "Informatica",
+		"anno": 3
+	},
+
+	{
+		"nome": "Luca",
+		"cognome": "Zunino",
+		"matricola": "LZ200352",
+		"nomeCorso": "Informatica",
+		"anno": 3
+	}
+]
