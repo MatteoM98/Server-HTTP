@@ -22,8 +22,6 @@ public class EchoHeaderHandler implements HttpHandler {
 		he.sendResponseHeaders(200,response.length());
 		OutputStream os = he.getResponseBody();
 		os.write(response.toString().getBytes());
-		os.close();
-		
-		
+		os.close();	
 	}
 }

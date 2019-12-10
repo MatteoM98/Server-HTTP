@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -19,6 +21,9 @@ public class EchoGetHandler implements HttpHandler {
 	private String valCognome;
 	private String valMatricola;
 	private String valNomeCorso;
+	private String response = "";
+	private boolean json;
+	private boolean xml;
 	private int valAnno;
 	
 	@Override
@@ -27,7 +32,6 @@ public class EchoGetHandler implements HttpHandler {
 		URI requestedUri = he.getRequestURI();
 		String query = requestedUri.getRawQuery();
 		parseQuery(query,parameters);
-		String response = "";
 		
 		//leggo i parametri passati dalla query e setto le variabili interne
 		for(String key: parameters.keySet()) {
@@ -38,25 +42,70 @@ public class EchoGetHandler implements HttpHandler {
 			if(key.equals("anno")) valAnno = Integer.parseInt(parameters.get(key).toString());
 		}
 		
-		//leggo la lista degli studenti che ho memorizzato nel mio DB
-		List<Studente> studenti = ReadJSON.readJSON();
+		//controllo se desidera file JSON o XML
+		Headers headers = he.getRequestHeaders();
+		Set<Map.Entry<String,List<String>>> entries = headers.entrySet();
+		for(Map.Entry<String, List<String>> entry : entries) {
+			if(entry.toString().contains("application/xml")) xml = true;
+			else if (entry.toString().contains("application/json")) json = true;
+		}
+				
+		//Se l'utente richiede il file JSON leggo dal file JSON
+		if(json) {
 		
-		//per ogni studente controllo se soddisfa i requisiti di ricerca
-		for(Studente s : studenti) {
-			//ricerca per matricola
-			if(s.getMatricola().equals(valMatricola)) response += s.toString();
-			//ricerca per nome e cognome
-			else if (s.getNome().equals(valNome) && s.getCognome().equals(valCognome)) response += s.toString();
-			//ricerca per corso di studi
-			else if (s.getNomeCorso().equals(valNomeCorso)) response += s.toString();
-			//ricerca per anno di studi
-			else if (s.getAnno() == valAnno) response += s.toString();
+			//leggo la lista degli studenti che ho memorizzato nel mio DB
+			List<Studente> studenti = ReadJSON.readJSON();
+			
+			//per ogni studente controllo se soddisfa i requisiti di ricerca
+			for(Studente s : studenti) {
+				//ricerca per matricola
+				if(s.getMatricola().equals(valMatricola)) response += s.toString();
+				//ricerca per nome e cognome
+				else if (s.getNome().equals(valNome) && s.getCognome().equals(valCognome)) response += s.toString();
+				//ricerca per corso di studi
+				else if (s.getNomeCorso().equals(valNomeCorso)) response += s.toString();
+				//ricerca per anno di studi
+				else if (s.getAnno() == valAnno) response += s.toString();
+			}
+			
+			he.sendResponseHeaders(200,response.length());
+			OutputStream os = he.getResponseBody();
+			os.write(response.toString().getBytes());
+			os.close();
+		}else if(xml) { //altrimenti leggo dal file XML
+			
+			ArrayList<Studente> studenti = ReadXML.readXML();
+			if(studenti==null) {
+				response = "Error reading";
+				he.sendResponseHeaders(200,response.length());
+				OutputStream os = he.getResponseBody();
+				os.write(response.toString().getBytes());
+				os.close();
+			} else {
+				//per ogni studente controllo se soddisfa i requisiti di ricerca
+				for(Studente s : studenti) {
+					//ricerca per matricola
+					if(s.getMatricola().equals(valMatricola)) response += s.toString();
+					//ricerca per nome e cognome
+					else if (s.getNome().equals(valNome) && s.getCognome().equals(valCognome)) response += s.toString();
+					//ricerca per corso di studi
+					else if (s.getNomeCorso().equals(valNomeCorso)) response += s.toString();
+					//ricerca per anno di studi
+					else if (s.getAnno() == valAnno) response += s.toString();
+				}
+				he.sendResponseHeaders(200,response.length());
+				OutputStream os = he.getResponseBody();
+				os.write(response.toString().getBytes());
+				os.close();
 		}
 		
-		he.sendResponseHeaders(200,response.length());
-		OutputStream os = he.getResponseBody();
-		os.write(response.toString().getBytes());
-		os.close();
+		}else {	//In caso non sia riuscito a leggere il formato del file restituisco un errore
+			response = "Error";
+			he.sendResponseHeaders(200,response.length());
+			OutputStream os = he.getResponseBody();
+			os.write(response.toString().getBytes());
+			os.close();
+		}
 		
 	}
 	

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record>
+   <studente>
+      <anno>3</anno>
+      <cognome>Magri</cognome>
+      <matricola>MM200251</matricola>
+      <nome>Matteo</nome>
+      <nomeCorso>Informatica</nomeCorso>
+   </studente>
+   <studente>
+      <anno>3</anno>
+      <cognome>Zunino</cognome>
+      <matricola>LZ200352</matricola>
+      <nome>Luca</nome>
+      <nomeCorso>Informatica</nomeCorso>
+   </studente>
+</record>
